@@ -226,8 +226,9 @@ func (svr *Service) HandleListener(l frpNet.Listener) {
 }
 
 func (svr *Service) RegisterControl(ctlConn frpNet.Conn, loginMsg *msg.Login) (err error) {
-	ctlConn.Info("client login info: ip [%s] version [%s] hostname [%s] os [%s] arch [%s]",
-		ctlConn.RemoteAddr().String(), loginMsg.Version, loginMsg.Hostname, loginMsg.Os, loginMsg.Arch)
+	ctlConn.Info("client login info: ip [%s] version [%s] hostname [%s] os [%s] arch [%s] key [%s] ClientPrivilegeToken [%s] ServerPrivilegeToken [%s]",
+		ctlConn.RemoteAddr().String(), loginMsg.Version, loginMsg.Hostname, loginMsg.Os, loginMsg.Arch, loginMsg.PrivilegeKey, loginMsg.PrivilegeToken,
+		util.GetAuthKey(config.ServerCommonCfg.PrivilegeToken, loginMsg.Timestamp))
 
 	// Check client version.
 	if ok, msg := version.Compat(loginMsg.Version); !ok {
@@ -241,7 +242,8 @@ func (svr *Service) RegisterControl(ctlConn frpNet.Conn, loginMsg *msg.Login) (e
 		err = fmt.Errorf("authorization timeout")
 		return
 	}
-	if util.GetAuthKey(config.ServerCommonCfg.PrivilegeToken, loginMsg.Timestamp) != loginMsg.PrivilegeKey {
+
+	if util.GetAuthKey(config.ServerCommonCfg.PrivilegeToken, loginMsg.Timestamp) != loginMsg.PrivilegeToken {
 		err = fmt.Errorf("authorization failed")
 		return
 	}

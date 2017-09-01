@@ -237,7 +237,8 @@ func (ctl *Control) login() (err error) {
 		if errRet != nil {
 			return errRet
 		}
-		stream, errRet := session.OpenStream()
+
+		stream, errRet := session.OpenStream() //open new stream
 		if errRet != nil {
 			session.Close()
 			return errRet
@@ -247,7 +248,8 @@ func (ctl *Control) login() (err error) {
 	}
 
 	now := time.Now().Unix()
-	ctl.loginMsg.PrivilegeKey = util.GetAuthKey(config.ClientCommonCfg.PrivilegeToken, now)
+	ctl.loginMsg.PrivilegeToken = util.GetAuthKey(config.ClientCommonCfg.PrivilegeToken, now) //encrypt token
+	ctl.loginMsg.PrivilegeKey = config.ClientCommonCfg.PrivilegeKey
 	ctl.loginMsg.Timestamp = now
 	ctl.loginMsg.RunId = ctl.getRunId()
 
@@ -310,7 +312,7 @@ func (ctl *Control) reader() {
 		}
 	}()
 	defer close(ctl.closedCh)
-
+	ctl.Warn("msg encrypto %s:", config.ClientCommonCfg.PrivilegeToken)
 	encReader := crypto.NewReader(ctl.conn, []byte(config.ClientCommonCfg.PrivilegeToken))
 	for {
 		if m, err := msg.ReadMsg(encReader); err != nil {

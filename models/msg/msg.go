@@ -68,14 +68,15 @@ type Message interface{}
 
 // When frpc start, client send this message to login to server.
 type Login struct {
-	Version      string `json:"version"`
-	Hostname     string `json:"hostname"`
-	Os           string `json:"os"`
-	Arch         string `json:"arch"`
-	User         string `json:"user"`
-	PrivilegeKey string `json:"privilege_key"`
-	Timestamp    int64  `json:"timestamp"`
-	RunId        string `json:"run_id"`
+	Version        string `json:"version"`
+	Hostname       string `json:"hostname"`
+	Os             string `json:"os"`
+	Arch           string `json:"arch"`
+	User           string `json:"user"`
+	PrivilegeKey   string `json:"privilege_key"`
+	PrivilegeToken string `json:"privilege_token"`
+	Timestamp      int64  `json:"timestamp"`
+	RunId          string `json:"run_id"`
 
 	// Some global configures.
 	PoolCount int `json:"pool_count"`
@@ -104,6 +105,8 @@ type NewProxy struct {
 	HostHeaderRewrite string   `json:"host_header_rewrite"`
 	HttpUser          string   `json:"http_user"`
 	HttpPwd           string   `json:"http_pwd"`
+	AuthKey           string   `json:"auth_key"`
+	AuthToken         string   `json:"auth_token"`
 
 	// stcp
 	Sk string `json:"sk"`

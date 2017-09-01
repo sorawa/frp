@@ -43,13 +43,16 @@ var (
 var usage string = `frpc is the client of frp
 
 Usage: 
-    frpc [-c config_file] [-L log_file] [--log-level=<log_level>] [--server-addr=<server_addr>]
+    frpc [-c config_file] [--subdomain subdomain] [--token token] [-L log_file] [--log-level=<log_level>] [--server-addr=<server_addr>]
     frpc [-c config_file] --reload
     frpc -h | --help
     frpc -v | --version
 
 Options:
     -c config_file              set config file
+    --subdomain subdomain              set subdomain
+    --key key                      set auth key
+    --token token               set auth token
     -L log_file                 set output log file, including console
     --log-level=<log_level>     set log level: debug, info, warn, error
     --server-addr=<server_addr> addr which frps is listening for, example: 0.0.0.0:7000
@@ -60,12 +63,22 @@ Options:
 
 func main() {
 	var err error
+	var configSubDomain string
+	var configToken string
 	confFile := "./frps.ini"
 	// the configures parsed from file will be replaced by those from command line if exist
 	args, err := docopt.Parse(usage, nil, true, version.Full(), false)
 
 	if args["-c"] != nil {
 		confFile = args["-c"].(string)
+	}
+
+	if args["--subdomain"] != nil {
+		configSubDomain = args["--subdomain"].(string)
+	}
+
+	if args["--token"] != nil {
+		configToken = args["--token"].(string)
 	}
 
 	conf, err := ini.LoadFile(confFile)
@@ -160,6 +173,21 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	}
+
+	for k, _ := range pxyCfgs {
+		if configSubDomain != "" {
+			pxyCfgs[k].GetBaseInfo().AuthKey = configSubDomain
+		}
+
+		if configToken != "" {
+			pxyCfgs[k].GetBaseInfo().AuthToken = configToken
+		}
+	}
+
+	for k, _ := range pxyCfgs {
+		fmt.Printf("Auth key %s  subDomain %s  token %s\n", pxyCfgs[k].GetBaseInfo().AuthKey, configSubDomain,
+			pxyCfgs[k].GetBaseInfo().AuthToken)
 	}
 
 	log.InitLog(config.ClientCommonCfg.LogWay, config.ClientCommonCfg.LogFile,

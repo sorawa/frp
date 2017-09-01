@@ -23,6 +23,7 @@ import (
 	"github.com/fatedier/frp/models/consts"
 	"github.com/fatedier/frp/models/msg"
 
+	"github.com/fatedier/frp/utils/bucket"
 	"github.com/fatedier/frp/utils/util"
 	ini "github.com/vaughan0/go-ini"
 )
@@ -94,8 +95,10 @@ type BaseProxyConf struct {
 	ProxyName string `json:"proxy_name"`
 	ProxyType string `json:"proxy_type"`
 
-	UseEncryption  bool `json:"use_encryption"`
-	UseCompression bool `json:"use_compression"`
+	UseEncryption  bool   `json:"use_encryption"`
+	UseCompression bool   `json:"use_compression"`
+	AuthKey        string `json:"auth_key"`
+	AuthToken      string `json:"auth_token"`
 }
 
 func (cfg *BaseProxyConf) GetName() string {
@@ -110,7 +113,9 @@ func (cfg *BaseProxyConf) compare(cmp *BaseProxyConf) bool {
 	if cfg.ProxyName != cmp.ProxyName ||
 		cfg.ProxyType != cmp.ProxyType ||
 		cfg.UseEncryption != cmp.UseEncryption ||
-		cfg.UseCompression != cmp.UseCompression {
+		cfg.UseCompression != cmp.UseCompression ||
+		cfg.AuthKey != cmp.AuthKey ||
+		cfg.AuthToken != cmp.AuthToken {
 		return false
 	}
 	return true
@@ -121,6 +126,9 @@ func (cfg *BaseProxyConf) LoadFromMsg(pMsg *msg.NewProxy) {
 	cfg.ProxyType = pMsg.ProxyType
 	cfg.UseEncryption = pMsg.UseEncryption
 	cfg.UseCompression = pMsg.UseCompression
+	cfg.AuthKey = pMsg.AuthKey
+	cfg.AuthToken = pMsg.AuthToken
+
 }
 
 func (cfg *BaseProxyConf) LoadFromFile(name string, section ini.Section) error {
@@ -134,6 +142,9 @@ func (cfg *BaseProxyConf) LoadFromFile(name string, section ini.Section) error {
 		cfg.ProxyName = name
 	}
 	cfg.ProxyType = section["type"]
+
+	cfg.AuthKey = section["auth_key"]
+	cfg.AuthToken = section["auth_token"]
 
 	tmpStr, ok = section["use_encryption"]
 	if ok && tmpStr == "true" {
@@ -152,6 +163,8 @@ func (cfg *BaseProxyConf) UnMarshalToMsg(pMsg *msg.NewProxy) {
 	pMsg.ProxyType = cfg.ProxyType
 	pMsg.UseEncryption = cfg.UseEncryption
 	pMsg.UseCompression = cfg.UseCompression
+	pMsg.AuthKey = cfg.AuthKey
+	pMsg.AuthToken = cfg.AuthToken
 }
 
 // Bind info
@@ -264,6 +277,7 @@ func (cfg *DomainConf) check() (err error) {
 			return fmt.Errorf("'.' and '*' is not supported in subdomain")
 		}
 	}
+
 	return nil
 }
 
@@ -522,6 +536,22 @@ func (cfg *HttpProxyConf) Check() (err error) {
 	if ServerCommonCfg.VhostHttpPort == 0 {
 		return fmt.Errorf("type [http] not support when vhost_http_port is not set")
 	}
+
+	if cfg.SubDomain == "" {
+		cfg.SubDomain = cfg.GetBaseInfo().AuthKey
+	}
+	if cfg.AuthToken == "" {
+		cfg.AuthToken = cfg.GetBaseInfo().AuthToken
+	}
+
+	if cfg.GetBaseInfo().AuthKey != cfg.SubDomain {
+		return fmt.Errorf("subdomain must the same with auth_key subdomain %s authkey %s", cfg.SubDomain, cfg.AuthKey)
+	}
+
+	if bucket.GetAuth(cfg.SubDomain) != cfg.AuthToken {
+		return fmt.Errorf("auth_key with subdomain compare auth_token error getAuth  %s cfg.AuthToken %s ", bucket.GetAuth(cfg.SubDomain), cfg.AuthToken)
+	}
+
 	err = cfg.DomainConf.check()
 	return
 }

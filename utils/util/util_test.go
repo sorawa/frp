@@ -1,6 +1,7 @@
 package util
 
 import (
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -83,4 +84,8 @@ func TestPortRangesCut(t *testing.T) {
 	actual := PortRangesCut(portRanges, 44444)
 	t.Log(actual)
 	assert.Equal(expect, actual)
+}
+
+func TestAuthToken(t *testing.T) {
+	log.Print(GetAuthToken("key12345678", 123456789))
 }

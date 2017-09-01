@@ -35,6 +35,7 @@ type ClientCommonConf struct {
 	LogWay            string
 	LogLevel          string
 	LogMaxDays        int64
+	PrivilegeKey      string
 	PrivilegeToken    string
 	AdminAddr         string
 	AdminPort         int64
@@ -127,6 +128,11 @@ func LoadClientCommonConf(conf ini.File) (cfg *ClientCommonConf, err error) {
 	tmpStr, ok = conf.Get("common", "privilege_token")
 	if ok {
 		cfg.PrivilegeToken = tmpStr
+	}
+
+	tmpStr, ok = conf.Get("common", "privilege_key")
+	if ok {
+		cfg.PrivilegeKey = tmpStr
 	}
 
 	tmpStr, ok = conf.Get("common", "admin_addr")

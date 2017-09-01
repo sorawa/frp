@@ -339,6 +339,9 @@ func (ctl *Control) RegisterProxy(pxyMsg *msg.NewProxy) (err error) {
 		return err
 	}
 
+	ctl.conn.Info("auth key %s", pxyConf.GetBaseInfo().AuthKey)
+	ctl.conn.Info("auth token %s", pxyConf.GetBaseInfo().AuthToken)
+
 	// NewProxy will return a interface Proxy.
 	// In fact it create different proxies by different proxy type, we just call run() here.
 	pxy, err := NewProxy(ctl, pxyConf)
