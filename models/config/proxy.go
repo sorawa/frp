@@ -249,9 +249,7 @@ func (cfg *DomainConf) LoadFromFile(name string, section ini.Section) (err error
 		cfg.SubDomain = tmpStr
 	}
 
-	if len(cfg.CustomDomains) == 0 && cfg.SubDomain == "" {
-		return fmt.Errorf("Parse conf error: proxy [%s] custom_domains and subdomain should set at least one of them", name)
-	}
+
 	return
 }
 
