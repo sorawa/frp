@@ -169,6 +169,7 @@ func main() {
 		}
 	}
 
+	config.ClientCommonCfg.User = configSubDomain
 	pxyCfgs, vistorCfgs, err := config.LoadProxyConfFromFile(config.ClientCommonCfg.User, conf, config.ClientCommonCfg.Start)
 	if err != nil {
 		fmt.Println(err)
@@ -184,12 +185,12 @@ func main() {
 			pxyCfgs[k].GetBaseInfo().AuthToken = configToken
 		}
 	}
-
-	for k, _ := range pxyCfgs {
-		fmt.Printf("Auth key %s  subDomain %s  token %s\n", pxyCfgs[k].GetBaseInfo().AuthKey, configSubDomain,
-			pxyCfgs[k].GetBaseInfo().AuthToken)
-	}
-
+	/*
+		for k, _ := range pxyCfgs {
+			fmt.Printf("Auth key %s  subDomain %s  token %s\n", pxyCfgs[k].GetBaseInfo().AuthKey, configSubDomain,
+				pxyCfgs[k].GetBaseInfo().AuthToken)
+		}
+	*/
 	log.InitLog(config.ClientCommonCfg.LogWay, config.ClientCommonCfg.LogFile,
 		config.ClientCommonCfg.LogLevel, config.ClientCommonCfg.LogMaxDays)
 
